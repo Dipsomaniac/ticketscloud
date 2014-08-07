@@ -47,7 +47,7 @@ setup(
     name=_project,
     version=_version,
     license=_license,
-    description=_read('DESCRIPTION'),
+    description=_read('API client for ticketscloud.ru'),
     long_description=_read('README.rst'),
     platforms=('Any'),
     keywords = "django flask sqlalchemy testing mock stub mongoengine data".split(), # noqa
