@@ -7,13 +7,9 @@ Ticketscloud API Client -- A python client for API ticketscloud.ru
 
 .. _badges:
 
-.. image:: https://secure.travis-ci.org/klen/ticketscloud.png?branch=develop
-    :target: http://travis-ci.org/klen/ticketscloud
+.. image:: https://secure.travis-ci.org/Dipsomaniac/ticketscloud.png?branch=develop
+    :target: http://travis-ci.org/Dipsomaniac/ticketscloud
     :alt: Build Status
-
-.. image:: https://coveralls.io/repos//ticketscloud/badge.png?branch=develop
-    :target: https://coveralls.io/r/klen/ticketscloud
-    :alt: Coverals
 
 .. image:: https://pypip.in/d/ticketscloud/badge.png
     :target: https://pypi.python.org/pypi/ticketscloud

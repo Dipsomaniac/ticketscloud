@@ -18,7 +18,7 @@ from functools import wraps
 
 # Package information
 # ===================
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -212,34 +212,43 @@ class TCClient(object):
             return json.load(f)
 
 
-@TCAPIDescriptor.__rule__(r'^v1/resources/events$')
-def prepare_events(data):
+@TCAPIDescriptor.__rule__(r'^v1/services/simple/events$')
+def construct_simple_events(data):
     """ Transform Events' data. """
-    return [prepare_event(e) for e in data]
+    for dd in data:
+        construct_event(dd['event'])
+        construct_sets(dd['sets'])
+    return data
+
+
+@TCAPIDescriptor.__rule__(r'^v1/resources/events$')
+def construct_events(data):
+    """ Transform Events' data. """
+    return [construct_event(e) for e in data]
 
 
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+$')
-def prepare_event(data):
+def construct_event(data):
     """ Transform Event's data. """
     data['lifetime'] = ic.Calendar().from_ical(data.get('lifetime', ''))
     return data
 
 
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+/sets$')
-def prepare_sets(data):
+def construct_sets(data):
     """ Transform Sets' data. """
-    return [prepare_set(e) for e in data]
+    return [construct_set(e) for e in data]
 
 
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+/sets/[^/]+$')
-def prepare_set(data):
+def construct_set(data):
     """ Transform Set's data. """
-    data['current_rule'] = prepare_rule(data['current_rule'])
-    data['rules'] = [prepare_rule(r) for r in data['rules']]
+    data['current_rule'] = construct_rule(data['current_rule'])
+    data['rules'] = [construct_rule(r) for r in data['rules']]
     return data
 
 
-def prepare_rule(data):
+def construct_rule(data):
     """ Transform Rule data. """
     try:
         data['cal'] = ic.Calendar().from_ical(data.get('cal', ''))
