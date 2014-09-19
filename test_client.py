@@ -1,6 +1,7 @@
 import pytest
 import icalendar as ic
 from ticketscloud import TCClient, TCException
+import sys
 
 
 def test_base():
@@ -15,6 +16,7 @@ def test_base():
         client.api.unknown()
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 0), reason="skip if python3.3")
 def test_simple_events():
     client = TCClient(
         access_token='666666666666',
