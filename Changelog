@@ -1,6 +1,7 @@
 2014-09-19  klen
 
-	* Version 0.3.0
+	* Version 0.4.0
+	* Supports cache (requests-cache)
 	* Update compatability
 
 2014-08-08  klen
