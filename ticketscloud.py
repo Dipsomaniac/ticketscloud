@@ -12,6 +12,7 @@ import icalendar as ic
 import json
 import logging
 import requests as rs
+import requests_cache as rc # noqa
 from contextlib import contextmanager
 from functools import wraps
 import decimal as dc
@@ -19,7 +20,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -118,15 +119,16 @@ class TCClient(object):
     """ Client for the TC API. """
 
     exception = TCException
+    cache_installed = False
 
     default_options = dict(
         accept='application/json',
         access_token=None,
         api_root='https://ticketscloud.org',
         api_version='v1',
+        cache=None,
         fixtures_dir=os.getcwd(),
         loglevel='info',
-        mock=None,
         user_agent='TC-Client v.%s' % __version__,
     )
 
@@ -153,8 +155,13 @@ class TCClient(object):
         logger.debug("Params: %s", params)
         logger.debug("Data: %s", data)
 
-        if self.options['mock'] and url in self.options['mock']:
-            return self.__load_mock(self.options['mock'][url])
+        if self.options['cache']:
+            rc.install_cache(self.options['cache'])
+
+        elif type(self).cache_installed:
+            rc.uninstall_cache()
+
+        type(self).cache_installed = bool(self.options['cache'])
 
         url = '%s/%s' % (self.options['api_root'], url.strip('/'))
 
@@ -201,15 +208,6 @@ class TCClient(object):
     @property
     def api(self):
         return TCAPIDescriptor(self)
-
-    def __load_mock(self, mock):
-        """ Load mock from file or return an object. """
-        if not isinstance(mock, str):
-            return mock
-
-        mock = os.path.join(self.options['fixtures_dir'], mock)
-        with open(mock) as f:
-            return json.load(f)
 
 
 @TCAPIDescriptor.__rule__(r'^v1/services/simple/events$')
