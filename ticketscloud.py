@@ -5,7 +5,6 @@ Ticketscloud description.
 in process
 
 """
-import os
 import re
 
 import icalendar as ic
@@ -20,7 +19,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -127,7 +126,6 @@ class TCClient(object):
         api_root='https://ticketscloud.org',
         api_version='v1',
         cache=None,
-        fixtures_dir=os.getcwd(),
         loglevel='info',
         user_agent='TC-Client v.%s' % __version__,
     )
@@ -183,8 +181,10 @@ class TCClient(object):
                 response = response.json()
 
         except (ValueError, rs.HTTPError):
-            message = "%s: %s" % (response.status_code, response.content)
-            raise TCException(message)
+            if locals().get('response') is not None:
+                message = "%s: %s" % (response.status_code, response.content)
+                raise TCException(message)
+            raise
 
         return response
 
@@ -204,6 +204,8 @@ class TCClient(object):
             yield self
         finally:
             self.options = _opts
+            if not self.options['cache'] and type(self).cache_installed:
+                rc.uninstall_cache()
 
     @property
     def api(self):
