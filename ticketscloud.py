@@ -19,7 +19,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -181,8 +181,10 @@ class TCClient(object):
                 response = response.json()
 
         except (ValueError, rs.HTTPError):
-            message = "%s: %s" % (response.status_code, response.content)
-            raise TCException(message)
+            if locals().get('response') is not None:
+                message = "%s: %s" % (response.status_code, response.content)
+                raise TCException(message)
+            raise
 
         return response
 
