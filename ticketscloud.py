@@ -14,6 +14,7 @@ import logging
 import requests as rs
 from contextlib import contextmanager
 from functools import wraps
+import decimal as dc
 
 
 # Package information
@@ -121,12 +122,12 @@ class TCClient(object):
     default_options = dict(
         accept='application/json',
         access_token=None,
-        api_root='http://ticketscloud.ru',
+        api_root='https://ticketscloud.org',
         api_version='v1',
         fixtures_dir=os.getcwd(),
         loglevel='info',
         mock=None,
-        user_agent='TC-Client',
+        user_agent='TC-Client v.%s' % __version__,
     )
 
     def __init__(self, **options):
@@ -151,7 +152,6 @@ class TCClient(object):
         rs_logger.setLevel(loglevel.upper())
         logger.debug("Params:")
         logger.debug(params)
-
         logger.debug("Data:")
         logger.debug(data)
 
@@ -163,6 +163,9 @@ class TCClient(object):
         _headers = self.headers
         if headers is not None:
             _headers.update(headers)
+
+        logger.debug("Headers:")
+        logger.debug(_headers)
 
         if data:
             data = json.dumps(data)
@@ -216,21 +219,15 @@ class TCClient(object):
 def construct_simple_events(data):
     """ Transform Events' data. """
     for dd in data:
-        construct_event(dd['event'])
-        construct_sets(dd['sets'])
+        construct_event(dd)
     return data
-
-
-@TCAPIDescriptor.__rule__(r'^v1/resources/events$')
-def construct_events(data):
-    """ Transform Events' data. """
-    return [construct_event(e) for e in data]
 
 
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+$')
 def construct_event(data):
     """ Transform Event's data. """
     data['lifetime'] = ic.Calendar().from_ical(data.get('lifetime', ''))
+    data['sets'] = construct_sets(data['sets'])
     return data
 
 
@@ -243,13 +240,22 @@ def construct_sets(data):
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+/sets/[^/]+$')
 def construct_set(data):
     """ Transform Set's data. """
-    data['current_rule'] = construct_rule(data['current_rule'])
+    data['price'] = dc.Decimal(data.get('price', '0'))
+    data['price_org'] = dc.Decimal(data.get('price_org', '0'))
     data['rules'] = [construct_rule(r) for r in data['rules']]
     return data
 
 
+@TCAPIDescriptor.__rule__(r'^v1/resources/events$')
+def construct_events(data):
+    """ Transform Events' data. """
+    return [construct_event(e) for e in data]
+
+
 def construct_rule(data):
     """ Transform Rule data. """
+    data['price'] = dc.Decimal(data.get('price', '0'))
+    data['price_org'] = dc.Decimal(data.get('price_org', '0'))
     try:
         data['cal'] = ic.Calendar().from_ical(data.get('cal', ''))
     except ValueError:
