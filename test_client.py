@@ -20,6 +20,7 @@ def test_simple_events():
         access_token='666666666666',
         loglevel='debug',
         api_root='http://dev.ticketscloud.ru/')
-    response = client.api.services.simple.events()
+    with client.ctx(cache='test'):
+        response = client.api.services.simple.events()
     assert response
     assert isinstance(response[0]['lifetime'], ic.Event)
