@@ -5,7 +5,6 @@ Ticketscloud description.
 in process
 
 """
-import os
 import re
 
 import icalendar as ic
@@ -127,7 +126,6 @@ class TCClient(object):
         api_root='https://ticketscloud.org',
         api_version='v1',
         cache=None,
-        fixtures_dir=os.getcwd(),
         loglevel='info',
         user_agent='TC-Client v.%s' % __version__,
     )
@@ -204,6 +202,8 @@ class TCClient(object):
             yield self
         finally:
             self.options = _opts
+            if not self.options['cache'] and type(self).cache_installed:
+                rc.uninstall_cache()
 
     @property
     def api(self):
