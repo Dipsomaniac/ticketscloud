@@ -19,7 +19,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -150,10 +150,8 @@ class TCClient(object):
         loglevel = self.options.get('loglevel', 'info')
         logger.setLevel(loglevel.upper())
         rs_logger.setLevel(loglevel.upper())
-        logger.debug("Params:")
-        logger.debug(params)
-        logger.debug("Data:")
-        logger.debug(data)
+        logger.debug("Params: %s", params)
+        logger.debug("Data: %s", data)
 
         if self.options['mock'] and url in self.options['mock']:
             return self.__load_mock(self.options['mock'][url])
@@ -164,8 +162,7 @@ class TCClient(object):
         if headers is not None:
             _headers.update(headers)
 
-        logger.debug("Headers:")
-        logger.debug(_headers)
+        logger.debug("Headers: %s", _headers)
 
         if data:
             data = json.dumps(data)
