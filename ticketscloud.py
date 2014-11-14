@@ -19,7 +19,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
