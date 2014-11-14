@@ -12,6 +12,30 @@ $(VENV): requirements.txt
 help:
 	@egrep "^# target:" [Mm]akefile
 
+# ==============
+#  Bump version
+# ==============
+
+.PHONY: release
+VERSION?=minor
+# target: release - Bump version
+release:
+	@pip install bumpversion
+	@bumpversion $(VERSION)
+	@git checkout master
+	@git merge develop
+	@git checkout develop
+	@git push --all
+	@git push --tags
+
+.PHONY: minor
+minor: release
+
+.PHONY: patch
+patch:
+	make release VERSION=patch
+
+
 .PHONY: clean
 # target: clean - Display callable targets
 clean:
@@ -26,7 +50,7 @@ register:
 
 .PHONY: upload
 # target: upload - Upload module on PyPi
-release: clean
+upload: clean
 	@python setup.py sdist upload || echo 'Skip sdist upload'
 	@python setup.py bdist_wheel upload || echo 'Skip bdist upload'
 

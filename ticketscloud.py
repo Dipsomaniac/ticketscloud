@@ -19,7 +19,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -218,6 +218,12 @@ def construct_simple_events(data):
     for dd in data:
         construct_event(dd)
     return data
+
+
+@TCAPIDescriptor.__rule__(r'^v1/services/simple/events/[^/]+$')
+def construct_simple_event(data):
+    """ Transform Event data. """
+    return construct_event(data)
 
 
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+$')
