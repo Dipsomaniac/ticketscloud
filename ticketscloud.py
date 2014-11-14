@@ -220,6 +220,12 @@ def construct_simple_events(data):
     return data
 
 
+@TCAPIDescriptor.__rule__(r'^v1/services/simple/events/[^/]+$')
+def construct_simple_event(data):
+    """ Transform Event data. """
+    return construct_event(data)
+
+
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+$')
 def construct_event(data):
     """ Transform Event's data. """
