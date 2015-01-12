@@ -104,6 +104,8 @@ class TCAPIDescriptor(object):
 
     def async_call(self, data=None, callback=None):
         """ Simple support for async libraries. """
+        if data is None:
+            data = {}
         response = self(**data)
         callback(response)
 
