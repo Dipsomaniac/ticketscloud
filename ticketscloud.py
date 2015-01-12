@@ -102,6 +102,11 @@ class TCAPIDescriptor(object):
                 return func(data)
         return data
 
+    def async_call(self, data=None, callback=None):
+        """ Simple support for async libraries. """
+        response = self(**data)
+        callback(response)
+
     @classmethod
     def __rule__(cls, reg):
         reg = re.compile(reg)

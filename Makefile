@@ -52,6 +52,7 @@ register:
 .PHONY: upload
 # target: upload - Upload module on PyPi
 upload: clean
+	@$(VIRTUALENV)/bin/pip install wheel
 	@python setup.py sdist upload || echo 'Skip sdist upload'
 	@python setup.py bdist_wheel upload || echo 'Skip bdist upload'
 
