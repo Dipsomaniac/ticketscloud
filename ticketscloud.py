@@ -19,7 +19,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -101,6 +101,11 @@ class TCAPIDescriptor(object):
             if reg.match(self.__url):
                 return func(data)
         return data
+
+    def async_call(self, data=None, callback=None):
+        """ Simple support for async libraries. """
+        response = self(**data)
+        callback(response)
 
     @classmethod
     def __rule__(cls, reg):
