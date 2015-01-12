@@ -1,11 +1,12 @@
-VENV=$(shell echo "$${VENV:-'.env'}")
+VIRTUALENV=$(shell echo "$${VDIR:-'.env'}")
 PACKAGE=ticketscloud
 
-all: $(VENV)
+all: $(VIRTUALENV)
 
-$(VENV): requirements.txt
-	[ -d $(VENV) ] || virtualenv --no-site-packages $(VENV)
-	$(VENV)/bin/pip install -r requirements.txt
+$(VIRTUALENV): requirements.txt
+	[ -d $(VIRTUALENV) ] || virtualenv --no-site-packages $(VIRTUALENV)
+	$(VIRTUALENV)/bin/pip install -r requirements.txt
+	touch $(VIRTUALENV)
 
 .PHONY: help
 # target: help - Display callable targets
@@ -54,10 +55,14 @@ upload: clean
 	@python setup.py sdist upload || echo 'Skip sdist upload'
 	@python setup.py bdist_wheel upload || echo 'Skip bdist upload'
 
+$(VIRTUALENV)/bin/py.test: $(VIRTUALENV) requirements-test.txt
+	$(VIRTUALENV)/bin/pip install -r requirements-test.txt
+	touch $(VIRTUALENV)/bin/py.test
+
 .PHONY: test
 # target: test - Runs tests
-test: clean
-	@python setup.py test
+test: clean $(VIRTUALENV)/bin/py.test
+	@$(VIRTUALENV)/bin/py.test -xs test_client.py
 
 .PHONY: t
 t: test
