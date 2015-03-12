@@ -6,9 +6,8 @@ in process
 
 """
 import re
-
 import icalendar as ic
-import json
+import ujson as json
 import logging
 import requests as rs
 import requests_cache as rc # noqa
@@ -19,7 +18,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -89,25 +88,31 @@ class TCAPIDescriptor(object):
     def __call__(self, **data):
         """ Make request to ticketscloud. """
 
+        client = self.__client
+        method = self.__method
+        url = self.__url
+        prepare = self.__prepare
+
         kwargs = dict(data=data)
-        if self.__method.lower() == 'get':
+        if method.lower() == 'get':
             data = dict(
                 (k, v if not isinstance(v, (list, tuple)) else ','.join(v))
                 for (k, v) in data.items())
             kwargs = dict(params=data)
 
-        data = self.__client.request(self.__method, self.__url, **kwargs)
+        if client.options['raw']:
+            url, params, headers, data = client.prepare(
+                url, kwargs.get('params'), kwargs.get('headers'), data)
+            return method, url, params, headers, data, prepare
+
+        response = self.__client.request(self.__method, self.__url, **kwargs)
+        return prepare(response)
+
+    def __prepare(self, data):
         for reg, func in self.__rules.items():
             if reg.match(self.__url):
                 return func(data)
         return data
-
-    def async_call(self, data=None, callback=None):
-        """ Simple support for async libraries. """
-        if data is None:
-            data = {}
-        response = self(**data)
-        callback(response)
 
     @classmethod
     def __rule__(cls, reg):
@@ -134,6 +139,7 @@ class TCClient(object):
         api_version='v1',
         cache=None,
         loglevel='info',
+        raw=False,
         user_agent='TC-Client v.%s' % __version__,
     )
 
@@ -151,22 +157,12 @@ class TCClient(object):
             'Content-type': 'application/json',
         }
 
-    def request(self, method, url, params=None, headers=None, to_json=True, data=None, **kwargs):
-        """ Make request to TC API. """
-
+    def prepare(self, url, params, headers, data):
         loglevel = self.options.get('loglevel', 'info')
         logger.setLevel(loglevel.upper())
         rs_logger.setLevel(loglevel.upper())
         logger.debug("Params: %s", params)
         logger.debug("Data: %s", data)
-
-        if self.options['cache']:
-            rc.install_cache(self.options['cache'])
-
-        elif type(self).cache_installed:
-            rc.uninstall_cache()
-
-        type(self).cache_installed = bool(self.options['cache'])
 
         url = '%s/%s' % (self.options['api_root'], url.strip('/'))
 
@@ -176,12 +172,27 @@ class TCClient(object):
 
         logger.debug("Headers: %s", _headers)
 
-        if data:
+        if data is not None:
             data = json.dumps(data)
+
+        return url, params, _headers, data
+
+    def request(self, method, url, params=None, headers=None, to_json=True, data=None, **kwargs):
+        """ Make request to TC API. """
+
+        url, params, headers, data = self.prepare(url, params, headers, data)
+
+        if self.options['cache']:
+            rc.install_cache(self.options['cache'])
+
+        elif type(self).cache_installed:
+            rc.uninstall_cache()
+
+        type(self).cache_installed = bool(self.options['cache'])
 
         try:
             response = rs.api.request(
-                method, url, params=params, headers=_headers, data=data, **kwargs)
+                method, url, params=params, headers=headers, data=data, **kwargs)
             logger.debug(response.content)
             response.raise_for_status()
             if to_json:
