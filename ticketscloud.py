@@ -247,7 +247,8 @@ def construct_simple_event(data):
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+$')
 def construct_event(data):
     """ Transform Event's data. """
-    data['lifetime'] = ic.Calendar().from_ical(data.get('lifetime', ''))
+    if data.get('lifetime'):
+        data['lifetime'] = ic.Calendar().from_ical(data['lifetime'])
     data['sets'] = construct_sets(data['sets'])
     return data
 
