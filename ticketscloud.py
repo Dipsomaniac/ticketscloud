@@ -18,7 +18,7 @@ import decimal as dc
 
 # Package information
 # ===================
-__version__ = "0.6.2"
+__version__ = "0.6.3"
 __project__ = "ticketscloud"
 __author__ = "Kirill Klenov <horneds@gmail.com>"
 __license__ = "BSD"
@@ -247,7 +247,8 @@ def construct_simple_event(data):
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+$')
 def construct_event(data):
     """ Transform Event's data. """
-    data['lifetime'] = ic.Calendar().from_ical(data.get('lifetime', ''))
+    if data.get('lifetime'):
+        data['lifetime'] = ic.Calendar().from_ical(data['lifetime'])
     data['sets'] = construct_sets(data['sets'])
     return data
 
