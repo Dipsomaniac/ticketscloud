@@ -15,12 +15,11 @@ def test_raw():
         loglevel='debug',
     )
 
-    method, url, params, headers, data, prepare = client.api.services.simple.events()
+    method, url, params, headers, data, _ = client.api.services.simple.events()
     assert data == '{}'
     assert headers
     assert method == 'GET'
     assert params == {}
-    assert prepare({}) == params
     assert url
 
 
