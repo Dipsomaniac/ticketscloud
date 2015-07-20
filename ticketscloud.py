@@ -233,9 +233,7 @@ class TCClient(object):
 @TCAPIDescriptor.__rule__(r'^v1/services/simple/events$')
 def construct_simple_events(data):
     """ Transform Events' data. """
-    for dd in data:
-        construct_event(dd)
-    return data
+    return [construct_event(dd) for dd in data if dd]
 
 
 @TCAPIDescriptor.__rule__(r'^v1/services/simple/events/[^/]+$')
@@ -247,9 +245,10 @@ def construct_simple_event(data):
 @TCAPIDescriptor.__rule__(r'^v1/resources/events/[^/]+$')
 def construct_event(data):
     """ Transform Event's data. """
-    if data.get('lifetime'):
-        data['lifetime'] = ic.Calendar().from_ical(data['lifetime'])
-    data['sets'] = construct_sets(data['sets'])
+    if data:
+        if data.get('lifetime'):
+            data['lifetime'] = ic.Calendar().from_ical(data['lifetime'])
+        data['sets'] = construct_sets(data['sets'])
     return data
 
 
@@ -271,7 +270,7 @@ def construct_set(data):
 @TCAPIDescriptor.__rule__(r'^v1/resources/events$')
 def construct_events(data):
     """ Transform Events' data. """
-    return [construct_event(e) for e in data]
+    return [construct_event(dd) for dd in data if dd]
 
 
 def construct_rule(data):
